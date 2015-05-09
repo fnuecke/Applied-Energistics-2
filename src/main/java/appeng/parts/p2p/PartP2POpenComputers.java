@@ -21,6 +21,8 @@ package appeng.parts.p2p;
 
 import java.util.concurrent.Callable;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.IIcon;
@@ -38,7 +40,6 @@ import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.SidedEnvironment;
 import li.cil.oc.api.network.Visibility;
 
-import appeng.api.networking.GridFlags;
 import appeng.api.networking.IGridNode;
 import appeng.api.networking.ticking.IGridTickable;
 import appeng.api.networking.ticking.TickRateModulation;
@@ -54,11 +55,12 @@ import appeng.transformer.annotations.Integration.InterfaceList;
 
 
 @InterfaceList(value = { @Interface(iface = "li.cil.oc.api.network.Environment", iname = "OpenComputers"), @Interface(iface = "li.cil.oc.api.network.SidedEnvironment", iname = "OpenComputers") })
-public class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> implements IGridTickable, Environment, SidedEnvironment
+public final class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> implements IGridTickable, Environment, SidedEnvironment
 {
+	@Nullable
 	private final Node node;
 
-	private final Callable updateCallback;
+	private final Callable<Void> updateCallback;
 
 	public PartP2POpenComputers(ItemStack is)
 	{
@@ -72,22 +74,14 @@ public class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> im
 		// Avoid NPE when called in pre-init phase (part population).
 		if ( API.network != null )
 		{
-			node = Network.newNode( this, Visibility.None ).create();
+			this.node = Network.newNode( this, Visibility.None ).create();
 		}
 		else
 		{
-			node = null; // to satisfy final
+			this.node = null; // to satisfy final
 		}
 
-		updateCallback = new Callable()
-		{
-			@Override
-			public Object call() throws Exception
-			{
-				updateConnections();
-				return null;
-			}
-		};
+		this.updateCallback = new UpdateCallback();
 	}
 
 	@Override
@@ -101,9 +95,9 @@ public class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> im
 	public void removeFromWorld()
 	{
 		super.removeFromWorld();
-		if (node() != null)
+		if ( this.node != null)
 		{
-			node().remove();
+			this.node.remove();
 		}
 	}
 
@@ -125,9 +119,9 @@ public class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> im
 	public void readFromNBT(NBTTagCompound data)
 	{
 		super.readFromNBT( data );
-		if (node() != null)
+		if ( this.node != null)
 		{
-			node().load( data );
+			this.node.load( data );
 		}
 	}
 
@@ -135,9 +129,9 @@ public class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> im
 	public void writeToNBT(NBTTagCompound data)
 	{
 		super.writeToNBT( data );
-		if (node() != null)
+		if ( this.node != null)
 		{
-			node().save( data );
+			this.node.save( data );
 		}
 	}
 
@@ -148,13 +142,13 @@ public class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> im
 	}
 
 	@Override
-	public TickRateModulation tickingRequest( IGridNode node, int TicksSinceLastCall )
+	public TickRateModulation tickingRequest( IGridNode node, int ticksSinceLastCall )
 	{
 		try
 		{
 			if( !this.proxy.getPath().isNetworkBooting() )
 			{
-				if ( node() != null ) // Client side doesn't have nodes.
+				if ( this.node() != null ) // Client side doesn't have nodes.
 				{
 					TickHandler.INSTANCE.addCallable( this.tile.getWorldObj(), this.updateCallback );
 				}
@@ -172,27 +166,30 @@ public class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> im
 
 	private void updateConnections()
 	{
-		if ( proxy.isPowered() && proxy.isActive() )
+		if ( this.proxy.isPowered() && this.proxy.isActive() )
 		{
 			// Make sure we're connected to existing OC nodes in the world.
-			Network.joinOrCreateNetwork( getTile() );
+			Network.joinOrCreateNetwork( this.getTile() );
 
-			if ( output )
+			if ( this.output )
 			{
-				if ( getInput() != null )
+				if ( this.getInput() != null && this.node != null )
 				{
-					Network.joinOrCreateNetwork( getInput().getTile() );
-					node().connect( getInput().node() );
+					Network.joinOrCreateNetwork( this.getInput().getTile() );
+					this.node.connect( this.getInput().node() );
 				}
 			}
 			else
 			{
 				try
 				{
-					for ( PartP2POpenComputers output : getOutputs() )
+					for ( PartP2POpenComputers output : this.getOutputs() )
 					{
-						Network.joinOrCreateNetwork( output.getTile() );
-						node().connect( output.node() );
+						if ( this.node != null )
+						{
+							Network.joinOrCreateNetwork( output.getTile() );
+							this.node.connect( output.node() );
+						}
 					}
 				}
 				catch ( GridAccessException e )
@@ -201,16 +198,17 @@ public class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> im
 				}
 			}
 		}
-		else
+		else if ( this.node != null )
 		{
-			node().remove();
+			this.node.remove();
 		}
 	}
 
+	@Nullable
 	@Override
 	public Node node()
 	{
-		return node;
+		return this.node;
 	}
 
 	@Override
@@ -225,15 +223,28 @@ public class PartP2POpenComputers extends PartP2PTunnel<PartP2POpenComputers> im
 	public void onMessage(Message message) {
 	}
 
+	@Nullable
 	@Override
 	public Node sidedNode(ForgeDirection side)
 	{
-		return side == this.side ? node() : null;
+		return side == this.side ? this.node : null;
 	}
 
 	@Override
 	public boolean canConnect(ForgeDirection side)
 	{
 		return side == this.side;
+	}
+
+	private final class UpdateCallback implements Callable<Void>
+	{
+		@Nullable
+		@Override
+		public Void call() throws Exception
+		{
+			PartP2POpenComputers.this.updateConnections();
+
+			return null;
+		}
 	}
 }

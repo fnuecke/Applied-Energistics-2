@@ -44,7 +44,8 @@ public enum GuiText
 
 	CraftingTerminal, FormationPlane, Inscriber, QuartzCuttingKnife,
 
-	METunnel, ItemTunnel, RedstoneTunnel, EUTunnel, FluidTunnel,
+	// tunnel names
+	METunnel, ItemTunnel, RedstoneTunnel, EUTunnel, FluidTunnel, OCTunnel, LightTunnel, RFTunnel,
 
 	StoredSize, CopyMode, CopyModeDesc, PatternTerminal, CraftingPattern,
 
@@ -56,7 +57,7 @@ public enum GuiText
 
 	inWorldPurificationFluix, inWorldSingularity, ChargedQuartz, OfSecondOutput,
 
-	NoSecondOutput, RFTunnel, Stores, Next, SelectAmount, Lumen, Empty,
+	NoSecondOutput, Stores, Next, SelectAmount, Lumen, Empty,
 
 	ConfirmCrafting, Stored, Crafting, Scheduled, CraftingStatus, Cancel,
 
@@ -64,13 +65,13 @@ public enum GuiText
 
 	CraftingCPU, Automatic, CoProcessors, Simulation, Missing,
 
-	InterfaceTerminal, NoCraftingCPUs, LightTunnel, Clean, InvalidPattern,
+	InterfaceTerminal, NoCraftingCPUs, Clean, InvalidPattern,
 
 	InterfaceTerminalHint, Range, TransparentFacades, TransparentFacadesHint,
 
 	NoCraftingJobs, CPUs, FacadeCrafting, inWorldCraftingPresses, ChargedQuartzFind,
 
-	Included, Excluded, Partitioned, Precise, Fuzzy,  OCTunnel,
+	Included, Excluded, Partitioned, Precise, Fuzzy,
 
 	// Used in a terminal to indicate that an item is craftable
 	SmallFontCraft, LargeFontCraft,

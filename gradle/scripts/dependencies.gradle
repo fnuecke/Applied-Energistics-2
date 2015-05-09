@@ -91,6 +91,8 @@ dependencies {
     mods "com.enderio:EnderIO:${minecraft_version}-${enderio_version}:dev"
     mods "net.mcft.copy.betterstorage:BetterStorage:${minecraft_version}-${betterstorage_version}:deobf"
     mods "inventorytweaks:InventoryTweaks:${invtweaks_version}:deobf"
+    mods "li.cil.oc:OpenComputers:MC${minecraft_version}-${opencomputers_version}:dev"
+
 //    mods name: 'CoFHLib', version: "[${minecraft_version}]${cofhlib_version}-dev", ext: 'jar'
 //    mods name: 'CoFHCore', version: "[${minecraft_version}]${cofhcore_version}-dev", ext: 'jar'
 //    mods name: 'ThermalExpansion', version: "[${minecraft_version}]${texpansion_version}-dev", ext: 'jar'
